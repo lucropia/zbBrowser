@@ -1,0 +1,55 @@
+#! /usr/bin/env make
+
+.SUFFIXES: .cpp .c .o .res .rc
+
+CC = clang
+C++ = clang++
+LINK = $(C++)
+RC = windres
+
+DEBUG = -D__DEBUG
+NDEBUG = -DNDEBUG
+
+ROOT = ../../..
+INC = $(ROOT)/include
+LIBD = $(ROOT)/lib/
+TGTDIR = $(ROOT)/release
+VPATH =
+
+DEFFINE = -DUNICODE -D_UNICODE -D_CRT_SECURE_NO_WARNINGS $(NDEBUG)
+CFLAG = $(DEFFINE) -I. -I$(INC) -Wall
+
+USERLIBS = -L"$(LIBD)" -llibcef -llibcef_dll_wrapper
+WINLIBS = -luser32 -lgdi32 -lversion
+LIBS = $(USERLIBS) $(WINLIBS)
+LDFLAGS = $(LIBS)
+
+SOURCE  = zbCefHandler.cpp winnmain.cpp
+OBJECTS = zbCefHandler.o zbWidget.o zbBrowser.o zbcefmain.o
+
+TARGET = $(TGTDIR)/Cefwarp.exe
+
+all: $(TARGET)
+$(TARGET): $(OBJECTS)
+	$(LINK) -o $@ $^ $(LDFLAGS)
+
+.c.o:
+	$(CC) -c $< $(CFLAG)
+.cpp.o:
+	$(C++) -c $< $(CFLAG)
+
+test: all
+	$(TARGET)
+
+depend: all
+	@ls -lh $(TARGET)
+	@dumpbin /nologo /dependents $(TARGET)
+
+
+clean:
+	$(RM) -r $(TGTDIR)/*.exe GPUCache *.res *.gbk *.o *.obj *.log $(TGTDIR)/*.log *~ .*~
+
+zbcefmain.o: zbcefmain.cpp
+zbCefHandler.o: zbCefHandler.cpp zbCefHandler.h zbCefApp.h
+zbBrowser.o: zbBrowser.cpp zbBrowser.h
+zbWidget.obj: zbWidget.cpp zbWidget.h
